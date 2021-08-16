@@ -1,0 +1,32 @@
+TF1 indicators:
+
+indicator == tf1_s
+prev_indicator = tf1_s
+
+indicator1 == tf1_f
+prev_indicator1 == tf1_s
+
+
+TF2 indicators:
+
+indicator_a == tf2_s
+prev__indicator_a = tf2_s
+
+indicator_a1 == tf2_f
+prev_indicator_a1 == tf2_f
+
+
+Output:
+
+Nomenclature:
+TF1 > TF2
+F > S
+
+Price: 12345.6789 
+     Candle_TF1: 001   Tick_TF1_S: 001 Ind_TF1_S: 123  Prev_Ind_TF1_S: 456  Tick_TF1_F: 001   Ind_TF1_F: 123  Prev_Ind_TF1_F: 456
+     Candle_TF2: 001   Tick_TF2_S: 001 Ind_TF2_S: 123  Prev_Ind_TF2_S: 456  Tick_TF2_F: 001   Ind_TF2_F: 123  Prev_Ind_TF2_F: 456
+
+Price: 12445.8766 
+     Candle_TF1: 001   Tick_TF1_S: 002 Ind_TF1_S: 124  Prev_Ind_TF1_S: 457  Tick_TF1_F: 002   Ind_TF1_F: 124  Prev_Ind_TF1_F: 457
+     Candle_TF2: 001   Tick_TF2_S: 002 Ind_TF2_S: 125  Prev_Ind_TF2_S: 458  Tick_TF2_F: 002   Ind_TF2_F: 123  Prev_Ind_TF2_F: 456
+

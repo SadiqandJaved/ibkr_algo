@@ -24,13 +24,13 @@ class TestApp(EWrapper, EClient):
         self.permId2ord = {}
         self.contract = Contract()
         self.data_tf1_s = []
-        self.data1_tf1_f = []
-        self.data_a = []
-        self.data_a1 = []
+        self.data_tf1_f = []
+        self.data_tf2_s = []
+        self.data_tf2_f = []
         self.data_counter_tf1_s = 0
-        self.data_counter1 = 0
-        self.data_counter_a = 0
-        self.data_counter_a1 = 0
+        self.data_counter_tf1_f = 0
+        self.data_counter_tf2_s = 0
+        self.data_counter_tf2_f = 0
         self.mov_avg_length_tf1_s = MOVING_AVG_PERIOD_LENGTH_TF1_S
         self.mov_avg_length_tf1_f = MOVING_AVG_PERIOD_LENGTH_TF1_F
         self.mov_avg_length_tf2_s = MOVING_AVG_PERIOD_LENGTH_TF2_S
@@ -80,28 +80,28 @@ class TestApp(EWrapper, EClient):
             self.data_tf1_s.pop(0)
 
     def running_list_tf1_f(self, price: float):
-        self.data1_tf1_f.append(price)
-        self.data_counter1 += 1
-        if self.data_counter1 < self.mov_avg_length_tf1_f:
+        self.data_tf1_f.append(price)
+        self.data_counter_tf1_f += 1
+        if self.data_counter_tf1_f < self.mov_avg_length_tf1_f:
             return
-        while len(self.data1_tf1_f) > self.mov_avg_length_tf1_f:
-            self.data1_tf1_f.pop(0)
+        while len(self.data_tf1_f) > self.mov_avg_length_tf1_f:
+            self.data_tf1_f.pop(0)
 
-    def running_list_a(self, price: float):
-        self.data_a.append(price)
-        self.data_counter_a += 1
-        if self.data_counter_a < self.mov_avg_length_tf2_s:
+    def running_list_tf2_s(self, price: float):
+        self.data_tf2_s.append(price)
+        self.data_counter_tf2_s += 1
+        if self.data_counter_tf2_s < self.mov_avg_length_tf2_s:
             return
-        while len(self.data_a) > self.mov_avg_length_tf2_s:
-            self.data_a.pop(0)
+        while len(self.data_tf2_s) > self.mov_avg_length_tf2_s:
+            self.data_tf2_s.pop(0)
 
-    def running_list_a1(self, price: float):
-        self.data_a1.append(price)
-        self.data_counter_a1 += 1
-        if self.data_counter_a1 < self.mov_avg_length_tf2_f:
+    def running_list_tf2_f(self, price: float):
+        self.data_tf2_f.append(price)
+        self.data_counter_tf2_f += 1
+        if self.data_counter_tf2_f < self.mov_avg_length_tf2_f:
             return
-        while len(self.data_a1) > self.mov_avg_length_tf2_f:
-            self.data_a1.pop(0)
+        while len(self.data_tf2_f) > self.mov_avg_length_tf2_f:
+            self.data_tf2_f.pop(0)
 
     def calc_indicator_tf1_s(self):
         df_indicator_tf1_s = pd.DataFrame(self.data_tf1_s, columns=['close'])
@@ -118,7 +118,7 @@ class TestApp(EWrapper, EClient):
         self.prev_indicator_tf1_s = self.indicator_tf1_s
 
     def calc_indicator_tf1_f(self):
-        df_indicator_tf1_f = pd.DataFrame(self.data1_tf1_f, columns=['close'])
+        df_indicator_tf1_f = pd.DataFrame(self.data_tf1_f, columns=['close'])
         df_indicator_tf1_f['open'] = df_indicator_tf1_f['close']
         df_indicator_tf1_f['high'] = df_indicator_tf1_f['close']
         df_indicator_tf1_f['low'] = df_indicator_tf1_f['close']
@@ -131,33 +131,33 @@ class TestApp(EWrapper, EClient):
             return
         self.prev_indicator_tf1_f = self.indicator_tf1_f
 
-    def calc_indicator_a(self):
-        df_indicator_a = pd.DataFrame(self.data_a, columns=['close'])
-        df_indicator_a['open'] = df_indicator_a['close']
-        df_indicator_a['high'] = df_indicator_a['close']
-        df_indicator_a['low'] = df_indicator_a['close']
-        df_indicator_a['indicator_a'] = TA.SMA(df_indicator_a, self.mov_avg_length_tf2_s) # choose indicator here
-        self.indicator_a = df_indicator_a['indicator_a'].iloc[-1]
+    def calc_indicator_tf2_s(self):
+        df_indicator_tf2_s = pd.DataFrame(self.data_tf2_s, columns=['close'])
+        df_indicator_tf2_s['open'] = df_indicator_tf2_s['close']
+        df_indicator_tf2_s['high'] = df_indicator_tf2_s['close']
+        df_indicator_tf2_s['low'] = df_indicator_tf2_s['close']
+        df_indicator_tf2_s['indicator_a'] = TA.SMA(df_indicator_tf2_s, self.mov_avg_length_tf2_s) # choose indicator here
+        self.indicator_tf2_s = df_indicator_tf2_s['indicator_a'].iloc[-1]
 
-    def calc_prev_indicator_a(self):
+    def calc_prev_indicator_tf2_s(self):
         self.q += 1
         if self.q < self.mov_avg_length_tf2_s:
             return
-        self.prev_indicator_a = self.indicator_a
+        self.prev_indicator_tf2_s = self.indicator_tf2_s
 
-    def calc_indicator_a1(self):
-        df_indicator_a1 = pd.DataFrame(self.data_a1, columns=['close'])
-        df_indicator_a1['open'] = df_indicator_a1['close']
-        df_indicator_a1['high'] = df_indicator_a1['close']
-        df_indicator_a1['low'] = df_indicator_a1['close']
-        df_indicator_a1['indicator_a1'] = TA.SMA(df_indicator_a1, self.mov_avg_length_tf2_f) # choose indicator here
-        self.indicator_a1 = df_indicator_a1['indicator_a1'].iloc[-1]
+    def calc_indicator_tf2_f(self):
+        df_indicator_tf2_f = pd.DataFrame(self.data_tf2_f, columns=['close'])
+        df_indicator_tf2_f['open'] = df_indicator_tf2_f['close']
+        df_indicator_tf2_f['high'] = df_indicator_tf2_f['close']
+        df_indicator_tf2_f['low'] = df_indicator_tf2_f['close']
+        df_indicator_tf2_f['indicator_a1'] = TA.SMA(df_indicator_tf2_f, self.mov_avg_length_tf2_f) # choose indicator here
+        self.indicator_tf2_f = df_indicator_tf2_f['indicator_a1'].iloc[-1]
 
-    def calc_prev_indicator_a1(self):
+    def calc_prev_indicator_tf2_f(self):
         self.r += 1
         if self.r < self.mov_avg_length_tf2_f:
             return
-        self.prev_indicator_a1 = self.indicator_a1
+        self.prev_indicator_tf2_f = self.indicator_tf2_f
 
     def decision_engine(self):
         if self.prev_indicator_tf1_s != 0:

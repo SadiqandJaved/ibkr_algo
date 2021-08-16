@@ -4,7 +4,7 @@ indicator == tf1_s
 prev_indicator = tf1_s
 
 indicator1 == tf1_f
-prev_indicator1 == tf1_s
+prev_indicator1 == tf1_f (changed to 'f')
 
 
 TF2 indicators:

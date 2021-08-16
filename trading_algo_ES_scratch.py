@@ -217,21 +217,21 @@ class TestApp(EWrapper, EClient):
     def tickByTickAllLast(self, reqId: int, tickType: int, time: int, price: float,
                           size: int, tickAttribLast: TickAttribLast, exchange: str,
                           specialConditions: str):
-        print('Candle:', str(self.tick_count // self.ticks_per_candle_tf1+1).zfill(3),
-              'Tick:', str(self.tick_count % self.ticks_per_candle_tf1 + 1).zfill(3),
-              'Candle_a:', str(self.tick_count // self.ticks_per_candle_tf2+1).zfill(3),
-              'Tick_a:', str(self.tick_count % self.ticks_per_candle_tf2 + 1).zfill(3),
+        print('Candle_TF1:', str(self.tick_count // self.ticks_per_candle_tf1+1).zfill(3),
+              'Tick_TF1:', str(self.tick_count % self.ticks_per_candle_tf1 + 1).zfill(3),
+              'Candle__TF2:', str(self.tick_count // self.ticks_per_candle_tf2+1).zfill(3),
+              'Tick__TF2:', str(self.tick_count % self.ticks_per_candle_tf2 + 1).zfill(3),
               # 'Time:', datetime.datetime.fromtimestamp(time),
               "Price:", "{:.2f}".format(price),
               # 'Size:', size,
-              'Indicator:', "{:.2f}".format(self.indicator_tf1_s),
-              'Prev_Ind:', "{:.2f}".format(self.prev_indicator_tf1_s),
-              'Ind1:', "{:.2f}".format(self.prev_indicator_tf1_f),
-              'Prev_Ind1:', "{:.2f}".format(self.prev_indicator_tf1_f),
-              'Ind_a:', "{:.2f}".format(self.indicator_a),
-              'Prev_Ind_a:', "{:.2f}".format(self.prev_indicator_a),
-              'Ind_a1:', "{:.2f}".format(self.indicator_a1),
-              'Prev_Ind_a1:', "{:.2f}".format(self.prev_indicator_a1),
+              'Ind_TF1_S:', "{:.2f}".format(self.indicator_tf1_s),
+              'Prev_Ind_TF1_S:', "{:.2f}".format(self.prev_indicator_tf1_s),
+              'Ind_TF1_F:', "{:.2f}".format(self.prev_indicator_tf1_f),
+              'Prev_Ind_TF1_F:', "{:.2f}".format(self.prev_indicator_tf1_f),
+              'Ind__TF2_S:', "{:.2f}".format(self.indicator_tf2_s),
+              'Prev_Ind_TF2_S:', "{:.2f}".format(self.prev_indicator_tf2_s),
+              'Ind_TF2_F:', "{:.2f}".format(self.indicator_tf2_f),
+              'Prev_Ind_TF2_F:', "{:.2f}".format(self.prev_indicator_tf2_f),
               self.signal
         )
               # 'Data', self.data)
@@ -246,12 +246,12 @@ class TestApp(EWrapper, EClient):
             self.create_order()
 
         if self.tick_count % self.ticks_per_candle_tf2 == self.ticks_per_candle_tf2 - 1:
-            self.running_list_a(price)
-            self.running_list_a1(price)
-            self.calc_prev_indicator_a()
-            self.calc_indicator_a()
-            self.calc_prev_indicator_a1()
-            self.calc_indicator_a1()
+            self.running_list_tf2_s(price)
+            self.running_list_tf2_f(price)
+            self.calc_prev_indicator_tf2_s()
+            self.calc_indicator_tf2_s()
+            self.calc_prev_indicator_tf2_f()
+            self.calc_indicator_tf2_f()
 
         self.tick_count += 1
 

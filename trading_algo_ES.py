@@ -9,12 +9,12 @@ from ibapi.order_state import OrderState
 import datetime
 from finta import TA
 
-TICKS_PER_CANDLE_TF1 = 9
-MOVING_AVG_PERIOD_LENGTH_TF1_S = 9 # slow timeframe (indicator)
-MOVING_AVG_PERIOD_LENGTH_TF1_F = 5 # fast timeframe (indicator1)
-TICKS_PER_CANDLE_TF2 = 5
-MOVING_AVG_PERIOD_LENGTH_TF2_S = 9
-MOVING_AVG_PERIOD_LENGTH_TF2_F = 5
+TICKS_PER_CANDLE_TF1 = 144
+MOVING_AVG_PERIOD_LENGTH_TF1_S = 14 # slow timeframe (indicator)
+MOVING_AVG_PERIOD_LENGTH_TF1_F = 9 # fast timeframe (indicator1)
+TICKS_PER_CANDLE_TF2 = 89
+MOVING_AVG_PERIOD_LENGTH_TF2_S = 14
+MOVING_AVG_PERIOD_LENGTH_TF2_F = 9
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
@@ -150,7 +150,7 @@ class TestApp(EWrapper, EClient):
         df_indicator_a1['open'] = df_indicator_a1['close']
         df_indicator_a1['high'] = df_indicator_a1['close']
         df_indicator_a1['low'] = df_indicator_a1['close']
-        df_indicator_a1['indicator_a1'] = TA.SMA(df_indicator_a1, self.mov_avg_length_tf2_s) # choose indicator here
+        df_indicator_a1['indicator_a1'] = TA.SMA(df_indicator_a1, self.mov_avg_length_tf2_f) # choose indicator here
         self.indicator_a1 = df_indicator_a1['indicator_a1'].iloc[-1]
 
     def calc_prev_indicator_a1(self):

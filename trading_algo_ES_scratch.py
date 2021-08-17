@@ -9,12 +9,12 @@ from ibapi.order_state import OrderState
 import datetime
 from finta import TA
 
-TICKS_PER_CANDLE_TF1 = 144
-MOVING_AVG_PERIOD_LENGTH_TF1_S = 14 # slow timeframe (indicator)
-MOVING_AVG_PERIOD_LENGTH_TF1_F = 9 # fast timeframe (indicator1)
-TICKS_PER_CANDLE_TF2 = 89
-MOVING_AVG_PERIOD_LENGTH_TF2_S = 14
-MOVING_AVG_PERIOD_LENGTH_TF2_F = 9
+TICKS_PER_CANDLE_TF1 = 10 #144
+MOVING_AVG_PERIOD_LENGTH_TF1_S = 9 #14 # slow timeframe (indicator)
+MOVING_AVG_PERIOD_LENGTH_TF1_F = 5 #9 # fast timeframe (indicator1)
+TICKS_PER_CANDLE_TF2 = 5 #89
+MOVING_AVG_PERIOD_LENGTH_TF2_S = 9 #14
+MOVING_AVG_PERIOD_LENGTH_TF2_F = 5 #9
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
@@ -181,14 +181,14 @@ class TestApp(EWrapper, EClient):
 
     def create_order(self):
         if self.signal == self.prev_signal:
-            print('Stay in position')
+            print('\nStay in current position\n')
             return
         elif self.signal == 'LONG':
             self.send_order('BUY')
         elif self.signal == 'SHORT':
             self.send_order('SELL')
         else:
-            print('Waiting for next order...')
+            print('\nWaiting for next order...\n')
 
     def send_order(self, action):
         order = Order()
@@ -217,7 +217,9 @@ class TestApp(EWrapper, EClient):
     def tickByTickAllLast(self, reqId: int, tickType: int, time: int, price: float,
                           size: int, tickAttribLast: TickAttribLast, exchange: str,
                           specialConditions: str):
-        print("Price:", "{:.2f}\n".format(price),
+        print("Current Position:", self.signal,
+              "Previous Position:", self.prev_signal,
+              "Current Price:", "{:.2f}\n".format(price),
               'Candle_TF1:', str(self.tick_count // self.ticks_per_candle_tf1+1).zfill(3),
               'Tick_TF1:', str(self.tick_count % self.ticks_per_candle_tf1 + 1).zfill(3),
               'Ind_TF1_S:', "{:.2f}".format(self.indicator_tf1_s),
@@ -229,8 +231,7 @@ class TestApp(EWrapper, EClient):
               'Ind_TF2_S:', "{:.2f}".format(self.indicator_tf2_s),
               'Prev_Ind_TF2_S:', "{:.2f}".format(self.prev_indicator_tf2_s),
               'Ind_TF2_F:', "{:.2f}".format(self.indicator_tf2_f),
-              'Prev_Ind_TF2_F:', "{:.2f}".format(self.prev_indicator_tf2_f),
-              self.signal
+              'Prev_Ind_TF2_F:', "{:.2f}".format(self.prev_indicator_tf2_f)
         )
               # 'Data', self.data)
         if self.tick_count % self.ticks_per_candle_tf1 == self.ticks_per_candle_tf1 - 1:

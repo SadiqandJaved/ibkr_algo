@@ -11,12 +11,12 @@ from ibapi.wrapper import EWrapper
 
 # Using WMA for Slow & HMA for Fast indicator for both TF1 & TF2 time frames
 
-TICKS_PER_CANDLE_TF1 = 10 #10 #144
-MOVING_AVG_PERIOD_LENGTH_TF1_S = 9 #9 #14 # slow timeframe (WMA)
-MOVING_AVG_PERIOD_LENGTH_TF1_F = 9 #5 #9 # fast timeframe (HMA)
-TICKS_PER_CANDLE_TF2 = 5 #5 #89
+TICKS_PER_CANDLE_TF1 = 144 #10 #144
+MOVING_AVG_PERIOD_LENGTH_TF1_S = 14 #9 #14 # slow timeframe (WMA)
+MOVING_AVG_PERIOD_LENGTH_TF1_F = 9 #5 #9 # fast timeframe (EMA)
+TICKS_PER_CANDLE_TF2 = 89 #5 #89
 MOVING_AVG_PERIOD_LENGTH_TF2_S = 9 #9 #14 (WMA)
-MOVING_AVG_PERIOD_LENGTH_TF2_F = 9 #5 #9 (HMA)
+MOVING_AVG_PERIOD_LENGTH_TF2_F = 5 #5 #9 (EMA) (TA.HMA was not updating, showing nan)
 
 class TestApp(EWrapper, EClient):
     def __init__(self):
@@ -125,7 +125,7 @@ class TestApp(EWrapper, EClient):
         df_indicator_tf1_f['open'] = df_indicator_tf1_f['close']
         df_indicator_tf1_f['high'] = df_indicator_tf1_f['close']
         df_indicator_tf1_f['low'] = df_indicator_tf1_f['close']
-        df_indicator_tf1_f['indicator1'] = TA.HMA(df_indicator_tf1_f, self.mov_avg_length_tf1_f) # choose indicator here
+        df_indicator_tf1_f['indicator1'] = TA.EMA(df_indicator_tf1_f, self.mov_avg_length_tf1_f) # choose indicator here
         self.indicator_tf1_f = df_indicator_tf1_f['indicator1'].iloc[-1]
 
     def calc_prev_indicator_tf1_f(self):
@@ -153,7 +153,7 @@ class TestApp(EWrapper, EClient):
         df_indicator_tf2_f['open'] = df_indicator_tf2_f['close']
         df_indicator_tf2_f['high'] = df_indicator_tf2_f['close']
         df_indicator_tf2_f['low'] = df_indicator_tf2_f['close']
-        df_indicator_tf2_f['indicator_a1'] = TA.HMA(df_indicator_tf2_f, self.mov_avg_length_tf2_f) # choose indicator here
+        df_indicator_tf2_f['indicator_a1'] = TA.EMA(df_indicator_tf2_f, self.mov_avg_length_tf2_f) # choose indicator here
         self.indicator_tf2_f = df_indicator_tf2_f['indicator_a1'].iloc[-1]
 
     def calc_prev_indicator_tf2_f(self):
@@ -192,6 +192,7 @@ class TestApp(EWrapper, EClient):
             else:
                 self.signal = self.prev_signal
 
+    # TA.HMA was not working, so using TA.EMA instead
     # (tf1_f) Fast is HMA & (tf1_s) Slow is WMA
     # (tf2_f) Fast is HMA & (tf2_s) Slow is WMA
     def decision_engine_crossover(self):
@@ -199,8 +200,10 @@ class TestApp(EWrapper, EClient):
             self.prev_signal = self.signal
             if self.prev_indicator_tf1_s > self.prev_indicator_tf1_f and self.indicator_tf1_s < self.indicator_tf1_f:
                 self.signal = 'LONG'
+                print(f'\nGoing LONG because {self.prev_indicator_tf1_s} (prev_tf1_s) > {self.prev_indicator_tf1_f} (prev_tf1_f) and {self.indicator_tf1_s} (tf1_s) < {self.indicator_tf1_f} (tf1_f) \n')
             elif self.prev_indicator_tf1_s < self.prev_indicator_tf1_f and self.indicator_tf1_s > self.indicator_tf1_f:
                 self.signal = 'SHORT'
+                print(f'\nGoing SHORT because {self.prev_indicator_tf1_s} (prev_tf1_s) < {self.prev_indicator_tf1_f} (prev_tf_f) and {self.indicator_tf1_s} (tf1_s) > {self.indicator_tf1_f} (tf1_f) \n')
             else:
                 self.signal = self.prev_signal
 
@@ -244,6 +247,8 @@ class TestApp(EWrapper, EClient):
         self.pending_order = True
         self.placeOrder(self.nextOrderId(), self.contract, order)
         print(f'\nSent a {order.action} order\n')
+        #print(f'{self.prev_indicator_tf1_s} (prev_tf1_s) - {self.prev_indicator_tf1_f} (prev_tf1_f) - {self.indicator_tf1_s} (tf1_s) - {self.indicator_tf1_f} (tf1_f) ')
+        #print(f'\n{self.prev_indicator_tf2_s} (prev_tf2_s) - {self.prev_indicator_tf1_f} (prev_tf2_f) - {self.indicator_tf1_s} (tf2_s) - {self.indicator_tf1_f} (tf2_f) \n')
 
     # run tick data (Heart of the Program)
     def tickDataOperations_req(self):
@@ -276,7 +281,7 @@ class TestApp(EWrapper, EClient):
               'Tick_TF1:', str(self.tick_count % self.ticks_per_candle_tf1 + 1).zfill(3),
               'Ind_TF1_S:', "{:.2f}".format(self.indicator_tf1_s),
               'Prev_Ind_TF1_S:', "{:.2f}".format(self.prev_indicator_tf1_s),
-              'Ind_TF1_F:', "{:.2f}".format(self.prev_indicator_tf1_f),
+              'Ind_TF1_F:', "{:.2f}".format(self.indicator_tf1_f),
               'Prev_Ind_TF1_F:', "{:.2f}\n".format(self.prev_indicator_tf1_f),
               'Candle_TF2:', str(self.tick_count // self.ticks_per_candle_tf2 + 1).zfill(3),
               'Tick_TF2:', str(self.tick_count % self.ticks_per_candle_tf2 + 1).zfill(3),

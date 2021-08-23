@@ -1,13 +1,13 @@
+import datetime
+
 import pandas as pd
+from finta import TA
 from ibapi.client import EClient
-from ibapi.wrapper import EWrapper
 # types
 from ibapi.common import *  # @UnusedWildImport
-from ibapi.contract import * # @UnusedWildImport
+from ibapi.contract import *  # @UnusedWildImport
 from ibapi.order import Order
-from ibapi.order_state import OrderState
-import datetime
-from finta import TA
+from ibapi.wrapper import EWrapper
 
 # Using WMA for Slow & HMA for Fast indicator for both TF1 & TF2 time frames
 
@@ -263,7 +263,12 @@ class TestApp(EWrapper, EClient):
     def tickByTickAllLast(self, reqId: int, tickType: int, time: int, price: float,
                           size: int, tickAttribLast: TickAttribLast, exchange: str,
                           specialConditions: str):
-        print("Time:", time,
+
+        #now = datetime.now()
+        #current_time = now.strftime("%H:%M:%S")
+        #"Time: ", datetime.datetime.fromtimestamp(time).strftime(" % Y % m % d % H: % M: % S"),
+
+        print("Time: ", datetime.datetime.fromtimestamp(time),
               "Current Signal:", self.signal,
               "Previous Signal:", self.prev_signal,
               "Current Price:", "{:.2f}\n".format(price),
@@ -280,7 +285,6 @@ class TestApp(EWrapper, EClient):
               'Ind_TF2_F:', "{:.2f}".format(self.indicator_tf2_f),
               'Prev_Ind_TF2_F:', "{:.2f}".format(self.prev_indicator_tf2_f)
         )
-              # 'Data', self.data)
 
         # Checking to see if the TF1 candle is complete (remainder of tick_count & ticks_per_candle_tf1)
         if self.tick_count % self.ticks_per_candle_tf1 == self.ticks_per_candle_tf1 - 1:

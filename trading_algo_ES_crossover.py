@@ -11,10 +11,10 @@ from finta import TA
 
 # Using WMA for Slow & HMA for Fast indicator for both TF1 & TF2 time frames
 
-TICKS_PER_CANDLE_TF1 = 144 #10 #144
+TICKS_PER_CANDLE_TF1 = 10 #10 #144
 MOVING_AVG_PERIOD_LENGTH_TF1_S = 9 #9 #14 # slow timeframe (WMA)
 MOVING_AVG_PERIOD_LENGTH_TF1_F = 9 #5 #9 # fast timeframe (HMA)
-TICKS_PER_CANDLE_TF2 = 89 #5 #89
+TICKS_PER_CANDLE_TF2 = 5 #5 #89
 MOVING_AVG_PERIOD_LENGTH_TF2_S = 9 #9 #14 (WMA)
 MOVING_AVG_PERIOD_LENGTH_TF2_F = 9 #5 #9 (HMA)
 
@@ -68,8 +68,9 @@ class TestApp(EWrapper, EClient):
         self.nextValidOrderId += 1
         return oid
 
+    # This is the START of the MAIN program
     def start(self):
-        self.tickDataOperations_req()
+        self.tickDataOperations_req() # This is the HEART of the PROGRAM
         # self.accountOperations_req()
         print("\nExecuting requests ... finished\n")
 
@@ -171,8 +172,18 @@ class TestApp(EWrapper, EClient):
             else:
                 self.signal = self.prev_signal
 
-    def decision_engine_tf1_tf2(self):
-        if self.prev_indicator_tf1_s != 0:
+    def decision_engine_tf1_tf2_enter(self):
+        if self.prev_indicator_tf1_s != 0 and self.prev_indicator_tf2_f != 0:
+            self.prev_signal = self.signal
+            if self.prev_indicator_tf1_s < self.indicator_tf1_s:
+                self.signal = 'LONG'
+            elif self.prev_indicator_tf2_f > self.indicator_tf2_f:
+                self.signal = 'SHORT'
+            else:
+                self.signal = self.prev_signal
+
+    def decision_engine_tf1_tf2_exit(self):
+        if self.prev_indicator_tf1_s != 0 and self.prev_indicator_tf2_f != 0:
             self.prev_signal = self.signal
             if self.prev_indicator_tf1_s < self.indicator_tf1_s:
                 self.signal = 'LONG'
@@ -182,8 +193,9 @@ class TestApp(EWrapper, EClient):
                 self.signal = self.prev_signal
 
     # (tf1_f) Fast is HMA & (tf1_s) Slow is WMA
+    # (tf2_f) Fast is HMA & (tf2_s) Slow is WMA
     def decision_engine_crossover(self):
-        if self.prev_indicator_tf1_s != 0:
+        if self.prev_indicator_tf1_s != 0 and self.prev_indicator_tf1_f != 0: # need to have atleast 2 signals (previous & current) to make a decision
             self.prev_signal = self.signal
             if self.prev_indicator_tf1_s > self.prev_indicator_tf1_f and self.indicator_tf1_s < self.indicator_tf1_f:
                 self.signal = 'LONG'
@@ -192,12 +204,23 @@ class TestApp(EWrapper, EClient):
             else:
                 self.signal = self.prev_signal
 
-    def decision_engine_crossover_tf1_tf2(self):
-        if self.prev_indicator_tf1_s != 0:
+    # we are separating the entry and exit into 2 separate engines because we have to make a decision after each TF1 & TF2 candle is complete (which is not the same time)
+    def decision_engine_crossover_tf1_tf2_enter(self):
+        if self.prev_indicator_tf1_s != 0 and self.prev_indicator_tf1_f != 0 and self.prev_indicator_tf2_s != 0 and self.prev_indicator_tf2_f != 0: # need to have atleast 2 signals (previous & current) to make a decision
             self.prev_signal = self.signal
-            if self.prev_indicator_tf1_f > self.prev_indicator_tf1_s:
+            if self.prev_indicator_tf1_s > self.prev_indicator_tf1_f and self.indicator_tf1_s < self.indicator_tf1_f:
                 self.signal = 'LONG'
-            elif self.prev_indicator_tf2_f < self.prev_indicator_tf2_s:
+            elif self.prev_indicator_tf2_s < self.prev_indicator_tf2_f and self.indicator_tf2_s > self.indicator_tf2_f:
+                self.signal = 'SHORT'
+            else:
+                self.signal = self.prev_signal
+
+    def decision_engine_crossover_tf1_tf2_exit(self):
+        if self.prev_indicator_tf1_s != 0 and self.prev_indicator_tf1_f != 0 and self.prev_indicator_tf2_s != 0 and self.prev_indicator_tf2_f != 0: # need to have atleast 2 signals (previous & current) to make a decision
+            self.prev_signal = self.signal
+            if self.prev_indicator_tf1_s > self.prev_indicator_tf1_f and self.indicator_tf1_s < self.indicator_tf1_f:
+                self.signal = 'LONG'
+            elif self.prev_indicator_tf2_s < self.prev_indicator_tf2_f and self.indicator_tf2_s > self.indicator_tf2_f:
                 self.signal = 'SHORT'
             else:
                 self.signal = self.prev_signal
@@ -222,7 +245,7 @@ class TestApp(EWrapper, EClient):
         self.placeOrder(self.nextOrderId(), self.contract, order)
         print(f'\nSent a {order.action} order\n')
 
-    # run tick data
+    # run tick data (Heart of the Program)
     def tickDataOperations_req(self):
         # Create contract object
 
@@ -240,7 +263,8 @@ class TestApp(EWrapper, EClient):
     def tickByTickAllLast(self, reqId: int, tickType: int, time: int, price: float,
                           size: int, tickAttribLast: TickAttribLast, exchange: str,
                           specialConditions: str):
-        print("Current Signal:", self.signal,
+        print("Time:", time,
+              "Current Signal:", self.signal,
               "Previous Signal:", self.prev_signal,
               "Current Price:", "{:.2f}\n".format(price),
               'Candle_TF1:', str(self.tick_count // self.ticks_per_candle_tf1+1).zfill(3),
@@ -257,6 +281,8 @@ class TestApp(EWrapper, EClient):
               'Prev_Ind_TF2_F:', "{:.2f}".format(self.prev_indicator_tf2_f)
         )
               # 'Data', self.data)
+
+        # Checking to see if the TF1 candle is complete (remainder of tick_count & ticks_per_candle_tf1)
         if self.tick_count % self.ticks_per_candle_tf1 == self.ticks_per_candle_tf1 - 1:
             self.running_list_tf1_s(price)
             self.running_list_tf1_f(price)
@@ -266,8 +292,11 @@ class TestApp(EWrapper, EClient):
             self.calc_indicator_tf1_f()
             #self.decision_engine()
             self.decision_engine_crossover()
+            #decision_engine_crossover_tf1_tf2_enter
             self.create_order()
 
+        # Checking to see if the TF2 candle is complete (remainder of tick_count & ticks_per_candle_tf2)
+        # When using both TF1 & TF2 for crossover, separate entry & exit into two separate decision_engines, and run them in parallel concurrently
         if self.tick_count % self.ticks_per_candle_tf2 == self.ticks_per_candle_tf2 - 1:
             self.running_list_tf2_s(price)
             self.running_list_tf2_f(price)
@@ -275,6 +304,7 @@ class TestApp(EWrapper, EClient):
             self.calc_indicator_tf2_s()
             self.calc_prev_indicator_tf2_f()
             self.calc_indicator_tf2_f()
+            #decision_engine_crossover_tf1_tf2_exit
 
         self.tick_count += 1
 

@@ -328,35 +328,37 @@ class TestApp(EWrapper, EClient):
         if self.prev_indicator_tf1_s != 0 and self.prev_indicator_tf1_f != 0: # need to have atleast 2 signals (previous & current) to make a decision
             self.prev_signal = self.signal
             #If we are already SHORT, go LONG as soon as ROC > 00 to COVER (don't have to wait for crossover signal)
-            # if (self.prev_signal == "SHORT"):
-            #     if (self.roc_tf1_s > 0) or (self.roc_tf1_f > 0) or (self.prev_indicator_tf1_s > self.prev_indicator_tf1_f) and (self.indicator_tf1_s < self.indicator_tf1_f):
-            #         self.signal = 'LONG'
-            #         print(f'\nGoing LONG because the following conditions were MET in decision engine\n'
-            #               f'    {self.roc_tf1_s} (roc_tf1_s) > 0 or {self.roc_tf1_f} (roc_tf1_f) > 0 or both conditions below\n'
-            #               f'    {self.prev_indicator_tf1_s} (prev_tf1_s) > {self.prev_indicator_tf1_f} (prev_tf1_f) and\n'
-            #               f'    {self.indicator_tf1_s} (tf1_s) < {self.indicator_tf1_f} (tf1_f) \n')
-            # #If we are already LONG, go SHORT as soon as ROC < 0 to CLOSE (don't have to wait for crossover signal)
-            # elif (self.prev_signal == "LONG"):
-            #     if (self.roc_tf1_s < 0) or (self.roc_tf1_f < 0) or ((self.prev_indicator_tf1_s < self.prev_indicator_tf1_f) and (self.indicator_tf1_s > self.indicator_tf1_f)):
-            #         self.signal = "SHORT"
-            #         print(f'\nGoing SHORT because the following conditions were MET in decision engine\n'
-            #               f'    {self.roc_tf1_s} (roc_tf1_s) or {self.roc_tf1_f} (roc_tf1_f) or both conditions below\n'
-            #               f'    {self.prev_indicator_tf1_s} (prev_tf1_s) < {self.prev_indicator_tf1_f} (prev_tf_f) and\n'
-            #               f'    {self.indicator_tf1_s} (tf1_s) > {self.indicator_tf1_f} (tf1_f)\n)')
-            # Only using ROC for long for now, need to figure out the short condition (if we can use ROC only)
-            if (self.roc_tf1_s > 0) and (self.roc_tf1_f > 0) and \
-                  (self.cci_tf1_s > 100) and (self.cci_tf1_f > 100) and \
+            if (self.prev_signal == "SHORT"):
+                if (self.roc_tf1_s > 0) or (self.roc_tf1_f > 0) or \
+                       (self.prev_indicator_tf1_s > self.prev_indicator_tf1_f) and (self.indicator_tf1_s < self.indicator_tf1_f):
+                    self.signal = 'LONG'
+                    print(f'\nGoing LONG because the following conditions were MET in decision engine\n'
+                          f'    {self.roc_tf1_s} (roc_tf1_s) > 0 or {self.roc_tf1_f} (roc_tf1_f) > 0 or both conditions below\n'
+                          f'    {self.prev_indicator_tf1_s} (prev_tf1_s) > {self.prev_indicator_tf1_f} (prev_tf1_f) and\n'
+                          f'    {self.indicator_tf1_s} (tf1_s) < {self.indicator_tf1_f} (tf1_f) \n')
+            #If we are already LONG, go SHORT as soon as ROC < 0 to CLOSE (don't have to wait for crossover signal)
+            elif (self.prev_signal == "LONG"):
+                if (self.roc_tf1_s < 0) or (self.roc_tf1_f < 0) or \
+                        ((self.prev_indicator_tf1_s < self.prev_indicator_tf1_f) and (self.indicator_tf1_s > self.indicator_tf1_f)):
+                    self.signal = "SHORT"
+                    print(f'\nGoing SHORT because the following conditions were MET in decision engine\n'
+                          f'    {self.roc_tf1_s} (roc_tf1_s) or {self.roc_tf1_f} (roc_tf1_f) or both conditions below\n'
+                          f'    {self.prev_indicator_tf1_s} (prev_tf1_s) < {self.prev_indicator_tf1_f} (prev_tf_f) and\n'
+                          f'    {self.indicator_tf1_s} (tf1_s) > {self.indicator_tf1_f} (tf1_f)\n)')
+            # Only using ROC//CCI for getting into new long position, need to figure out the short condition (if we can use ROC only)
+            elif (self.roc_tf1_s > 0) and (self.roc_tf1_f > 0) and (self.cci_tf1_s > 100) and (self.cci_tf1_f > 100) and \
                     (self.prev_indicator_tf1_s > self.prev_indicator_tf1_f) and (self.indicator_tf1_s < self.indicator_tf1_f):
                 self.signal = 'LONG'
                 print(f'\nGoing LONG because the following conditions were MET in decision engine\n'
                       f'    {self.roc_tf1_s} (roc_tf1_s) > 0 and {self.roc_tf1_f} (roc_tf1_f) > 0 and both conditions below\n'
+                      f'    {self.cci_tf1_s} (roc_tf1_s) > 100 and {self.cci_tf1_f} (roc_tf1_f) > 100 and both conditions below\n'
                       f'    {self.prev_indicator_tf1_s} (prev_tf1_s) > {self.prev_indicator_tf1_f} (prev_tf1_f) and\n'
                       f'    {self.indicator_tf1_s} (tf1_s) < {self.indicator_tf1_f} (tf1_f) \n')
             #Use crossover signal to start a SHORT position (only if we are not already LONG) Not using ROC to start a SHORT position (yet)
             elif ((self.prev_indicator_tf1_s < self.prev_indicator_tf1_f) and (self.indicator_tf1_s > self.indicator_tf1_f)):
                 self.signal = 'SHORT'
                 print(f'\nGoing SHORT because the following conditions were MET in decision engine\n' 
-                      f'    {self.prev_indicator_tf1_s} (prev_tf1_s) < {self.prev_indicator_tf1_f} (prev_tf_f) and both conditions below\n'
+                      f'    {self.prev_indicator_tf1_s} (prev_tf1_s) < {self.prev_indicator_tf1_f} (prev_tf_f) and \n'
                       f'    {self.indicator_tf1_s} (tf1_s) > {self.indicator_tf1_f} (tf1_f) \n'
                       f'    FYI: (not used in decision) {self.roc_tf1_s} (roc_tf1_s) or {self.roc_tf1_f} (roc_tf1_f)\n')
             else:

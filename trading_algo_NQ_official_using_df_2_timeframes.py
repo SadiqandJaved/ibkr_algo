@@ -337,7 +337,7 @@ class TestApp(EWrapper, EClient):
                     self.signal = 'LONG'
                     print(f'\nGoing LONG because the following conditions were MET in decision engine\n'
                           f'    {self.roc_tf1_s} (roc_tf1_s) > 0 or {self.roc_tf1_f} (roc_tf1_f) > 0 or \n'
-                          f'    {self.roc_tf2_s} (roc_tf1_s) > 0 or {self.roc_tf2_f} (roc_tf1_f) > 0 or both conditions below\n'
+                          f'    {self.roc_tf2_s} (roc_tf2_s) > 0 or {self.roc_tf2_f} (roc_tf2_f) > 0 or both conditions below\n'
                           f'    {self.prev_indicator_tf1_s} (prev_tf1_s) > {self.prev_indicator_tf1_f} (prev_tf1_f) and\n'
                           f'    {self.indicator_tf1_s} (tf1_s) < {self.indicator_tf1_f} (tf1_f) \n')
             #If we are already LONG, go SHORT as soon as ROC < 0 to CLOSE (don't have to wait for crossover signal)
@@ -352,22 +352,28 @@ class TestApp(EWrapper, EClient):
             # Only using ROC//CCI for getting into new long position, need to figure out the short condition (if we can use ROC only)
             elif (self.roc_tf1_s > 0) and (self.roc_tf1_f > 0) and (self.cci_tf1_s > 100) and (self.cci_tf1_f > 100) and \
                     (self.roc_tf2_s > 0) and (self.roc_tf2_f > 0) and (self.cci_tf2_s > 100) and (self.cci_tf2_f > 100) and \
-                        (self.prev_indicator_tf1_s > self.prev_indicator_tf1_f) and (self.indicator_tf1_s < self.indicator_tf1_f):
+                    (self.prev_indicator_tf1_s > self.prev_indicator_tf1_f) and (self.indicator_tf1_s < self.indicator_tf1_f) \
+                    (self.prev_indicator_tf2_s > self.prev_indicator_tf2_f) and (self.indicator_tf2_s < self.indicator_tf2_f):
                 self.signal = 'LONG'
                 print(f'\nGoing LONG because the following conditions were MET in decision engine\n'
                       f'    {self.roc_tf1_s} (roc_tf1_s) > 0 and {self.roc_tf1_f} (roc_tf1_f) > 0 and \n'
                       f'    {self.cci_tf1_s} (cci_tf1_s) > 100 and {self.cci_tf1_f} (cci_tf1_f) > 100 and \n'
-                      f'    {self.roc_tf2_s} (roc_tf2_s) > 0 and {self.roc_tf1_f} (roc_tf2_f) > 0 and \n'
-                      f'    {self.cci_tf2_s} (cci_tf2_s) > 100 and {self.cci_tf1_f} (cci_tf2_f) > 100 and \n'
+                      f'    {self.roc_tf2_s} (roc_tf2_s) > 0 and {self.roc_tf2_f} (roc_tf2_f) > 0 and \n'
+                      f'    {self.cci_tf2_s} (cci_tf2_s) > 100 and {self.cci_tf2_f} (cci_tf2_f) > 100 and \n'
                       f'    {self.prev_indicator_tf1_s} (prev_tf1_s) > {self.prev_indicator_tf1_f} (prev_tf1_f) and\n'
-                      f'    {self.indicator_tf1_s} (tf1_s) < {self.indicator_tf1_f} (tf1_f) \n')
+                      f'    {self.indicator_tf1_s} (tf1_s) < {self.indicator_tf1_f} (tf1_f) and\n'
+                      f'    {self.prev_indicator_tf2_s} (prev_tf2_s) > {self.prev_indicator_tf2_f} (prev_tf2_f) and\n'
+                      f'    {self.indicator_tf1_s} (tf2_s) < {self.indicator_tf1_f} (tf2_f) \n')
             #Use crossover signal to start a SHORT position (only if we are not already LONG) Not using ROC to start a SHORT position (yet)
-            elif ((self.prev_indicator_tf1_s < self.prev_indicator_tf1_f) and (self.indicator_tf1_s > self.indicator_tf1_f)):
+            elif ((self.prev_indicator_tf1_s < self.prev_indicator_tf1_f) and (self.indicator_tf1_s > self.indicator_tf1_f)) and\
+                    ((self.prev_indicator_tf2_s < self.prev_indicator_tf2_f) and (self.indicator_tf2_s > self.indicator_tf2_f)):
                 self.signal = 'SHORT'
                 print(f'\nGoing SHORT because the following conditions were MET in decision engine\n' 
-                      f'    {self.prev_indicator_tf1_s} (prev_tf1_s) < {self.prev_indicator_tf1_f} (prev_tf_f) and \n'
+                      f'    {self.prev_indicator_tf1_s} (prev_tf1_s) < {self.prev_indicator_tf1_f} (prev_tf1_f) and \n'
                       f'    {self.indicator_tf1_s} (tf1_s) > {self.indicator_tf1_f} (tf1_f) \n'
-                      f'    FYI: (not used in decision) {self.roc_tf1_s} (roc_tf1_s) or {self.roc_tf1_f} (roc_tf1_f)\n')
+                      f'    {self.prev_indicator_tf2_s} (prev_tf2_s) < {self.prev_indicator_tf2_f} (prev_tf2_f) and \n'
+                      f'    {self.indicator_tf2_s} (tf2_s) > {self.indicator_tf2_f} (tf2_f) and \n')
+
             else:
                 self.signal = self.prev_signal
 
@@ -411,8 +417,6 @@ class TestApp(EWrapper, EClient):
         self.pending_order = True
         self.placeOrder(self.nextOrderId(), self.contract, order)
         print(f'\nSent a {order.action} order\n')
-        #print(f'{self.prev_indicator_tf1_s} (prev_tf1_s) - {self.prev_indicator_tf1_f} (prev_tf1_f) - {self.indicator_tf1_s} (tf1_s) - {self.indicator_tf1_f} (tf1_f) ')
-        #print(f'\n{self.prev_indicator_tf2_s} (prev_tf2_s) - {self.prev_indicator_tf1_f} (prev_tf2_f) - {self.indicator_tf1_s} (tf2_s) - {self.indicator_tf1_f} (tf2_f) \n')
 
     # run tick data (Heart of the Program)
     def tickDataOperations_req(self):
@@ -433,14 +437,11 @@ class TestApp(EWrapper, EClient):
                           size: int, tickAttribLast: TickAttribLast, exchange: str,
                           specialConditions: str):
 
-        #now = datetime.now()
-        #current_time = now.strftime("%H:%M:%S")
-        #"Time: ", datetime.datetime.fromtimestamp(time).strftime(" % Y % m % d % H: % M: % S"),
-
         print("Time: ", datetime.datetime.fromtimestamp(time),
               "Current Signal:", self.signal,
               "Previous Signal:", self.prev_signal,
               "Current Price:", "{:.2f}\n".format(price),
+              "Tick Count:", str(self.tick_count).zfill(8),
               "TF1:", self.ticks_per_candle_tf1, "ticks per candle "
               "TF1_S (WMA):", self.mov_avg_length_tf1_s, "candles "
               "TF1_F (HMA):", self.mov_avg_length_tf1_f, "candles "
